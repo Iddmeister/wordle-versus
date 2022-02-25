@@ -32,6 +32,48 @@ socket.on("gameCreated", data => {
 })
 
 
+//Letter Logic
+
+
+class Tile {
+    static BLANK = "Blank Tile";
+    static INCORRECT = "Grey Letter";
+    static MISPLACED = "Yellow Letter";
+    static CORRECT = "Green Letter";
+
+    constructor(letter, state) {
+        this.letter = letter
+        this.dom = document.createElement("div", )
+        this.dom.className = "tile"
+        this.dom.appendChild(document.createTextNode(this.letter))
+        this.setState(state)
+    }
+
+    setState(state) {
+
+        self.state = state
+
+        switch(self.state) {
+
+            case Tile.BLANK:
+                break
+
+            case Tile.INCORRECT:
+                break
+
+            case Tile.MISPLACED:
+                break
+            
+            case Tile.CORRECT:
+                break
+
+        }
+
+    }
+}
+
+
+
 function letterEntered(letter) {
 
 /*
@@ -64,6 +106,12 @@ function back() {
 }
 
 $(()=> {
+
+    for (let i=0; i<50; i++) {
+    let tile = new Tile("A", Tile.CORRECT)
+    $(".guess-grid").append(tile.dom)
+    }
+
     console.log("working...")
 
     $(".key").click((event) => {

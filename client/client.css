@@ -74,12 +74,13 @@
   .guess-grid {
     display: grid;
     justify-content: center;
-    align-content: center;
     flex-grow: 1;
     grid-template-columns: repeat(5, 4em);
-    grid-template-rows: repeat(6, 4em);
+    grid-auto-rows: 4em;
     gap: .25em;
     margin-bottom: 1em;
+    overflow-y: overlay;
+    height: 6em;
   }
   
   .tile {
@@ -89,6 +90,7 @@
     text-transform: uppercase;
     font-weight: bold;
     display: flex;
+    flex-grow: 1;
     justify-content: center;
     align-items: center;
     user-select: none;
