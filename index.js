@@ -104,6 +104,8 @@ class Player {
     }
 
     request(data) {
+        if (!this.game) return
+
         switch(data.type) {
 
             case "submitTarget":
@@ -115,11 +117,12 @@ class Player {
                 //!!!!!!!!!!!!!!!
                 
                 this.target = data.target
+
+                this.game.checkCanStart()
+
                 break;
 
             case "submitGuess":
-                console.log("what")
-                console.log(data)
                 if (this.canGuess && !this.guess) {
                     if (data.guess.length < WORD_LENGTH) {
                         return
@@ -129,7 +132,7 @@ class Player {
                         return
                     }
 
-                    this.guess = data.guess
+                    this.guess = data.guess.toLowerCase()
                     this.sendData({type:"submittedGuess", guess:data.guess})
                     this.opponent.sendData({type:"opponentSubmittedGuess"})
                     this.game.submittedGuess()
@@ -149,6 +152,11 @@ class Game {
         } else {
             return code
         }
+    }
+
+    sendPlayersData(data) {
+        this.player1.sendData(data)
+        this.player2.sendData(data)
     }
 
     colourWord(guess, target) {
@@ -193,9 +201,16 @@ class Game {
         player2.player = this.player2
         this.player1.opponent = this.player2
         
-        this.player1.sendData({type:"gameJoined"})
-        this.player2.sendData({type:"gameJoined"})
+        this.sendPlayersData({type:"gameJoined"})
 
+        this.checkCanStart()
+
+    }
+
+    checkCanStart() {
+        if (this.player1.target && this.player2.target) {
+            this.startGame()
+        }
     }
 
     startGame() {
@@ -207,6 +222,9 @@ class Game {
 
         this.player1.canGuess = true
         this.player2.canGuess = true
+
+        this.sendPlayersData({type:"gameStarted"})
+
     }
 
     roundTimeOver() {
@@ -215,7 +233,13 @@ class Game {
 
     gameTimeOver() {
         console.log("Game Over")
+        this.destroyGame()
 
+    }
+
+    destroyGame() {
+        console.log(`Removing Game ${this.code}`)
+        delete games[this.code]
     }
 
     submittedGuess() {
@@ -266,14 +290,36 @@ class Game {
             colours:this.colourWord(this.player1.guess, this.player1.target)
         })
 
-        this.player1.canGuess = true
-        this.player2.canGuess = true
-        this.player1.guess = null
-        this.player2.guess = null
+        if (this.player1.guess === this.player2.target && this.player2.guess === this.player1.target) {
+            this.endGame(null)
+        } else if (this.player1.guess === this.player2.target) {
+            this.endGame(this.player1)
+        } else if (this.player2.guess === this.player1.target) {
+            this.endGame(this.player2)
+        } else {
 
-        this.player1.sendData({type:"nextRound"})
-        this.player2.sendData({type:"nextRound"})
+            this.player1.canGuess = true
+            this.player2.canGuess = true
+            this.player1.guess = null
+            this.player2.guess = null
+            
+            this.sendPlayersData({type:"nextRound"})
 
+        }
+
+    }
+
+    endGame(winner) {
+        if (!winner) {
+            this.sendPlayersData({type:"gameEnded", winner:"draw"})
+        } else if (winner == this.player1) {
+            this.player1.sendData({type:"gameEnded", winner:"you"})
+            this.player2.sendData({type:"gameEnded", winner:"opponent"})
+        } else {
+            this.player2.sendData({type:"gameEnded", winner:"you"})
+            this.player1.sendData({type:"gameEnded", winner:"opponent"})
+        }
+        this.destroyGame()
     }
 
 }

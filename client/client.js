@@ -18,46 +18,48 @@ class Timer {
         this.object = dom
         this.interval = null
         this.timeUp = timeUp
+        this.startTime = null
     }
 
-    start(interval=10) {
-
-        this.interval = new Worker("interval.js")
-        
-        this.interval.onmessage = (e) => {
-            this.time = Math.max(0, this.time - interval)
-            this.setTimer(this.time/this.maxTime)
-            $(this.object).children("div").text(Math.ceil(this.time/1000))
-
-            if (this.time == 0) {
-                this.timeUp()
-                this.stop()
-            }
-
+    update() {
+        let passedTime = (new Date()).getTime()-this.startTime
+        this.time = Math.max(0, this.maxTime-passedTime)
+        this.setTimer(this.time/this.maxTime)
+        if (this.time == 0) {
+            this.timeUp()
+            this.stop()
         }
 
-        this.interval.postMessage(10)
     }
+
+    start() {
+        this.startTime = (new Date()).getTime()
+        this.interval = setInterval(() => {this.update()}, 10)
+    }
+
     stop() {
-        if (this.interval) {
-            this.interval.terminate()
-            this.interval = null
-        }
+        if (!this.interval) return
+        clearInterval(this.interval)
+        this.interval = null
     }
 
     reset() {
         this.stop()
         this.time = this.maxTime
         this.setTimer(this.time/this.maxTime)
+
     }
 
     setTimer(amount) {
 
         $(this.object).css("background-image", `conic-gradient(white ${amount*360}deg, hsl(240, 3%, 7%) 0deg`)
+        // $(this.object).children("div").text(Math.ceil(this.time/1000))
+        $(this.object).children("div").text(Math.ceil((amount*this.maxTime)/1000))
+
     
     }
-
 }
+
 
 function createDOM(text) {
     let t = document.createElement("template")
@@ -124,6 +126,8 @@ socket.onmessage = (raw) => {
             break;
             
         case "gameStarted":
+            $("#waiting").hide()
+
             gameStarted = true
             addRow()
 
@@ -133,6 +137,21 @@ socket.onmessage = (raw) => {
             roundTimer.start()
 
             canType = true
+
+            break;
+
+        case "gameEnded":
+
+            roundTimer.stop()
+
+            if (data.winner == "draw") {
+                $("#end-game-message").text("Draw!")
+            } else if (data.winner == "you") {
+                $("#end-game-message").text("You Won!")
+            } else {
+                $("#end-game-message").text("You Lost :(")
+            }
+            $("#end-game-message").show()
 
             break;
 
@@ -193,6 +212,7 @@ function joinGame() {
 
 }
 
+
 var currentRow = null
 
 function addRow(text="", opponent=false) {
@@ -248,6 +268,7 @@ function enterRow(row) {
 
         $(currentRow).remove()
         $("#word-prompt").hide()
+        $("#waiting").show()
         currentRow = null
 
         console.log("Submitted Target Word")
@@ -404,6 +425,7 @@ function physicalKeyPressed(event) {
         return
       }
 }
+
 
 
 $(()=> {
