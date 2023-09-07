@@ -1,134 +1,412 @@
-// GET AWAY!!!!
+const WORD_LENGTH = 5
+const FLIP_ANIMATION_DURATION = 200
+const SLIDE_ANIMATION_DURATION = 200
 
-//Stole keyboard code from https://github.com/WebDevSimplified/wordle-clone
+const tileHTML = '<div class="tile"> </div>'
+const rowHTML = '<div class="row"></div>'
 
-const letters = "abcdefghijklmnopqrstuvwxyz"
+var roundTimer
+var gameTimer
+var canType = true
+var gameStarted = false
 
-const url = new URL(window.location)
-var urlCode = url.pathname.substring(1)
+class Timer {
 
-const socket = io()
+    constructor(dom, time, timeUp) {
+        this.maxTime = time
+        this.time = time
+        this.object = dom
+        this.interval = null
+        this.timeUp = timeUp
+    }
 
-if (urlCode.length > 0) {
-    joinGame(urlCode)
+    start(interval=10) {
+
+        this.interval = new Worker("interval.js")
+        
+        this.interval.onmessage = (e) => {
+            this.time = Math.max(0, this.time - interval)
+            this.setTimer(this.time/this.maxTime)
+            $(this.object).children("div").text(Math.ceil(this.time/1000))
+
+            if (this.time == 0) {
+                this.timeUp()
+                this.stop()
+            }
+
+        }
+
+        this.interval.postMessage(10)
+    }
+    stop() {
+        if (this.interval) {
+            this.interval.terminate()
+            this.interval = null
+        }
+    }
+
+    reset() {
+        this.stop()
+        this.time = this.maxTime
+        this.setTimer(this.time/this.maxTime)
+    }
+
+    setTimer(amount) {
+
+        $(this.object).css("background-image", `conic-gradient(white ${amount*360}deg, hsl(240, 3%, 7%) 0deg`)
+    
+    }
+
 }
 
-function joinGame(code) {
+function createDOM(text) {
+    let t = document.createElement("template")
+    t.innerHTML = text.trim()
+    return t.content.firstChild
+}
 
-    socket.emit("join", {code:code})
+const views = ["#menu", "#lobby", "#loading", "#game"]
+
+switchView("#loading")
+
+function switchView(newView) {
+    for (let view of views) {
+        if (view != newView) $(view).hide()
+    }
+    $(newView).show()
+}
+
+var socket = new WebSocket("ws://"+location.host)
+
+socket.sendData = (data) => {
+    socket.send(JSON.stringify(data))
+}
+
+socket.onerror = (event) => {
 
 }
+
+socket.onclose = (event) => {
+
+}
+
+socket.onopen = (event) => {
+
+    
+    if (location.pathname.startsWith("/join/")) {
+        let code = location.pathname.replace("/join/", "")
+        code = code.replace("/", "")
+        if (!(code.length <= 0)) {
+            socket.sendData({type:"joinGame", code:code})
+            switchView("#loading")
+            return
+        }
+    }
+
+    switchView("#menu")
+    //switchView("#game")
+
+}
+
+socket.onmessage = (raw) => {
+    let data = JSON.parse(raw.data)
+    switch(data.type) {
+        case "gameCreated":
+            switchView("#lobby")
+            $("#game-link").text(location.origin+"/join/"+data.code)
+            break;
+
+        case "gameJoined":
+
+            switchView("#game")
+            addRow()
+
+            break;
+            
+        case "gameStarted":
+            gameStarted = true
+            addRow()
+
+            roundTimer = new Timer($("#round-timer"), 20000, () => {
+                roundTimer.reset()
+            })
+            roundTimer.start()
+
+            canType = true
+
+            break;
+
+        case "error":
+
+            console.log(data.error)
+            switchView("#menu")
+
+            break;
+
+        case "revealMyGuess":
+
+            $(currentRow).children(".tile").removeClass("entered")
+
+            if (data.guess == "?????") {
+                Array.from(currentRow.children).forEach((tile, index, array) => {
+                    tile.innerHTML = "~"
+                })
+                colourRow(currentRow, "-----")
+                return
+            }
+
+            colourRow(currentRow, data.colours)
+
+            break;
+
+        case "revealOpponentGuess":
+
+            if (data.guess == "?????") {
+                let row = addRow("~~~~~", true)
+                colourRow(row, "-----")
+                return
+            }
+
+            let row = addRow(data.guess, true)
+            colourRow(row, data.colours)
+
+            break;
+
+        case "nextRound":
+            roundTimer.reset()
+            roundTimer.start()
+            addRow()
+            canType = true
+            break;
+
+    }
+}
+
 
 function createGame() {
-    socket.emit("create")
+
+    socket.sendData({type:"createGame"})
+
 }
 
-socket.on("error", data => {
-    alert(data.message)
-})
+function joinGame() {
 
-socket.on("gameCreated", data => {
-    console.log(data.code)
-})
+}
 
+var currentRow = null
 
-//Letter Logic
+function addRow(text="", opponent=false) {
 
-
-class Tile {
-    static BLANK = "Blank Tile";
-    static INCORRECT = "Grey Letter";
-    static MISPLACED = "Yellow Letter";
-    static CORRECT = "Green Letter";
-
-    constructor(letter, state) {
-        this.letter = letter
-        this.dom = document.createElement("div", )
-        this.dom.className = "tile"
-        this.dom.appendChild(document.createTextNode(this.letter))
-        this.setState(state)
+    let row = createDOM(rowHTML)
+    for (let t = 0; t < WORD_LENGTH; t++) {
+        let tile = createDOM(tileHTML)
+        if (opponent) {tile.classList.add("opponent")}
+        if (text.length > 0) tile.innerHTML = text[t]
+        row.appendChild(tile)
+    }
+    $("#guess-grid").append(row)
+    if (text.length <= 0) {
+        currentRow = row
     }
 
-    setState(state) {
+    $("#guess-grid")[0].scrollTop = $("#guess-grid")[0].scrollHeight
 
-        self.state = state
+    return row
 
-        switch(self.state) {
+}
 
-            case Tile.BLANK:
-                break
+function getWordFromRow(row) {
+    return Array(row.children).map(tile => {
+        return $(tile).text()
+    }).join()
+}
 
-            case Tile.INCORRECT:
-                break
+function enterRow(row) {
+    if (!row) return
 
-            case Tile.MISPLACED:
-                break
-            
-            case Tile.CORRECT:
-                break
+    if (!canType) return
 
+    let word = getWordFromRow(row).replace(" ", "")
+
+    if (word.length < WORD_LENGTH) {
+        //showAlert("Not enough letters")
+        console.log("Not enough letters")
+        return
+    }
+
+    if (!gameStarted) {
+        if (!targetWords.includes(word.toLowerCase())) {
+            console.log("Not in target word list")
+            return
         }
 
+        socket.sendData({type:"submitTarget", target:word.toLowerCase()})
+
+        $("#target-word").text(word.toUpperCase())
+
+        canType = false
+
+        $(currentRow).remove()
+        $("#word-prompt").hide()
+        currentRow = null
+
+        console.log("Submitted Target Word")
+        return
+    }
+
+    if (!dictionary.includes(word.toLowerCase())) {
+        //showAlert("Not in word list")
+        console.log("Not in word list")
+        return
+    }
+
+    socket.sendData({type:"submitGuess", guess:word.toLowerCase()})
+
+    canType = false
+
+    $(currentRow).children(".tile").addClass("entered")
+
+    console.log("Submitted Guess")
+}
+
+function setCharAt(str,index,chr) {
+    if(index > str.length-1) return str;
+    return str.substring(0,index) + chr + str.substring(index+1);
+}
+
+function colourWord(guess, target) {
+
+    let tWord = target
+    let cWord = guess
+
+    for (let letter = 0; letter < guess.length; letter++) {
+        if (cWord[letter] == target[letter]) {
+            cWord = setCharAt(cWord, letter, "@")
+            tWord = setCharAt(tWord, letter, "@")
+        } else {
+            let index = tWord.indexOf(cWord[letter])
+            if (index != -1) {
+                cWord = setCharAt(cWord, letter, "/")
+                tWord = setCharAt(tWord, index, "/")
+            } else {
+                cWord = setCharAt(cWord, letter, "-")
+            }
+        }
+    }
+    return cWord
+}
+
+function colourRow(row, colours) {
+
+    let colouredWord = colours
+
+    Array.from(row.children).forEach((tile, index, array) => {
+        // let key = document.getElementById("keyboard").querySelector(`[data-key="${tile.innerHTML.toUpperCase()}"i]`)
+        // key.classList.add("wrong")
+    
+        switch(colouredWord[index]) {
+          case "/":
+            flipTile(tile, index, array, "wrong-location")
+            break;
+          case "@":
+            flipTile(tile, index, array, "correct")
+            break;
+          default:
+            flipTile(tile, index, array, "wrong")
+        }
+    
+    
+      })
+
+}
+
+function flipTile(tile, index, array, state) {
+    tile.dataset.state = "flipping"
+    setTimeout(() => {
+        tile.classList.add("flip")
+    }, (index * FLIP_ANIMATION_DURATION) / 2)
+  
+    tile.addEventListener("transitionend", ()=>{
+      tile.classList.remove("flip")
+      tile.style.color = "white"
+      tile.dataset.state = state
+      tile.style.color = "--font-colour"
+      if (index === array.length - 1) {
+          tile.addEventListener(
+            "transitionend",
+            () => {
+              //startInteraction()
+            }, {once:true}
+          )  
+        }
+      }
+    )
+}
+
+function removeLetter() {
+    if (!currentRow) return
+
+    if (!canType) return
+
+    let tile = undefined
+
+    for (child of currentRow.children) {
+        if (!($(child).text() === " " || $(child).text() === "")) {
+            tile = child
+        }
+    }
+
+    if (tile) {
+        $(tile).text(" ")
+    } else {
+        //Display error - no letters to delete
     }
 }
 
+function addLetter(letter) {
+    if (!currentRow) return
 
+    if (!canType) return
 
-function letterEntered(letter) {
+    let tile = undefined
 
-/*
+    for (child of currentRow.children) {
+        if ($(child).text() === " " || $(child).text() === "") {
+            tile = child
+            break
+        }
+    }
 
-            Need to redo tiles with creation ability
-            to allow scrolling rows and a better way of selecting
-             -- create tile from template HTML string
-             -- create new line of tiles when needed,  no original grid
-
-
-
-*/
-
-
-
-    //var tile = guessGrid.querySelector(":not([data-letter])")
-
-}
-
-function enter() {
-
-    console.log("Enter!!")
+    if (tile) {
+        $(tile).text(letter)
+    } else {
+        //Display Error
+        console.log("Out of space")
+    }
 
 }
 
-function back() {
+function physicalKeyPressed(event) {
 
-    console.log("BackSpace!!")
+    if (event.key === "Enter") {
+        enterRow(currentRow)
+        return
+      }
+    
+      if (event.key === "Backspace" || event.key === "Delete") {
+        removeLetter()
+        return
+      }
 
+
+    if (event.key.match(/^[a-z]$/) || event.key.match(/^[A-Z]$/)) {
+        addLetter(event.key.toUpperCase())
+        return
+      }
 }
+
 
 $(()=> {
-
-    for (let i=0; i<50; i++) {
-    let tile = new Tile("A", Tile.CORRECT)
-    $(".guess-grid").append(tile.dom)
-    }
-
-    console.log("working...")
-
-    $(".key").click((event) => {
-        letterEntered(event.target.dataset.key)
-    })
-    $("#enter").click(enter)
-    $("#back").click(back)
-    document.addEventListener("keydown", (event) => {
-        if (event.key == "Enter") {
-            enter()
-        } else if (event.key == "Backspace") {
-            back()
-        } else if (letters.includes(event.key)) {
-            letterEntered(event.key)
-        }
-    })
-
-
-
+    $(document).on("keydown", physicalKeyPressed)
 })
+

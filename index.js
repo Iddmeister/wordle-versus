@@ -1,97 +1,280 @@
 const express = require("express")
-const app = express()
-app.use(express.static('client'))
-const server = require('http').Server(app)
-const io = require("socket.io")(server)
+const path = require("path")
+const crypto = require("crypto")
+const ws = require("ws")
+const words = require("./words")
 
+const WORD_LENGTH = 5
 const PORT = 8080
+const DEBUG = process.argv.length > 2 && process.argv[2] == "debug"
 
-class Game {
-    constructor(code, player1, player2) {
-        this.code = code
-        this.player1 = player1
-        this.player2 = player2
-    }
-
-    isFull() {
-        return this.player1 && this.player2
-    }
-
-    start() {
-        if (!this.isFull()) {
-            return
-        }
-        console.log("Start")
-        //Start Game
-
-    }
-
-}
+if (!DEBUG) console.debug = ()=>{}
 
 var games = {}
 
-function generateCode() {
-
-    let code = Math.random() * 100000 | 0
-    if (code in games) {
-        return generateCode()
-    } else {
-        return code
-    }
-
-}
-
-function createGame(player1, player2) {
-
-    let code = generateCode()
-    var game = new Game(code, player1, player2)
-    games[code] = game
-    return game
-
-}
-
-function joinGame(player, code) {
-
-    try {
-        let game = games[code]
-
-        if (game.isFull()) {
-            player.emit("error", {"message":"Game Full"})
-            return
-        }
-
-        game.player2 = player
-        game.start()
-
-    } catch(err) {
-        player.emit("error", {"message":"Game Not Found"})
-        //player.emit("error", {"message":err.message})
-
-    }
-}
-
-io.on("connection", socket => {
-
-    socket.on("join", data => {
-
-        joinGame(socket, data.code)
-
-
-    })
-
-    socket.on("create", data => {
-        let game = createGame(socket, null)
-        socket.emit("gameCreated", {code:game.code})
-    })
-
-})
+var app = express()
+app.use("/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
+app.use("/join/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
 
 app.get("/*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client/client.html"))
+})
+
+app.get("/join/*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client/client.html"))
+})
+
+
+
+function setCharAt(str,index,chr) {
+    if(index > str.length-1) return str;
+    return str.substring(0,index) + chr + str.substring(index+1);
+}
+
+
+var httpServer = app.listen(PORT, () => {
+    console.log(`Server Listening On Port ${PORT}`)
+
+})
+
+var socketServer = new ws.Server({server:httpServer})
+
+socketServer.on("connection", (client) => {
+    console.log("Client Connected")
+    client.sendData = (data) => {client.send(JSON.stringify(data))}
     
-    res.sendFile(__dirname+"/client/client.html")
+    client.on("close", (code) => {
+        console.log("Disconnect", code)
+    })
+
+    client.on("message", (raw) => {
+        let data = JSON.parse(raw)
+
+        if (!data.type) data.type = ""
+
+        switch(data.type) {
+
+            case "createGame":
+        
+                console.log("Creatng Game")
+                let game = new Game(client)
+
+                break;
+
+            case "joinGame":
+                if (("code" in data) && games[data.code]) {
+                    let game = games[data.code]
+                    if (game.opponent) {
+                        client.sendData({type:"error", error:"Game Already Started"})
+                        return
+                    }
+                    game.join(client)
+                } else {
+                    client.sendData({type:"error", error:"Game Does Not Exist"})
+                }
+
+                break;
+
+            default:
+
+                if (client.player) {
+                    client.player.request(data)
+                }
+
+                break;
+
+        }
+
+    })
 
 })
 
-server.listen(PORT, () => {
-    console.log("Listening on " + String(PORT))
-})
+class Player {
+    constructor(client, game, opponent=null) {
+        this.game = game
+        this.client = client
+        this.canGuess = false
+        this.guess = null
+        this.opponent = opponent
+        this.target = null
+    }
+
+    sendData(data) {
+        this.client.sendData(data)
+    }
+
+    request(data) {
+        switch(data.type) {
+
+            case "submitTarget":
+
+                //!!!!!!!!!!!!!!!
+
+                //Need To Check Target Word
+
+                //!!!!!!!!!!!!!!!
+                
+                this.target = data.target
+                break;
+
+            case "submitGuess":
+                console.log("what")
+                console.log(data)
+                if (this.canGuess && !this.guess) {
+                    if (data.guess.length < WORD_LENGTH) {
+                        return
+                    }
+
+                    if (!words.dictionary.includes(data.guess.toLowerCase())) {
+                        return
+                    }
+
+                    this.guess = data.guess
+                    this.sendData({type:"submittedGuess", guess:data.guess})
+                    this.opponent.sendData({type:"opponentSubmittedGuess"})
+                    this.game.submittedGuess()
+                }
+                break;
+
+        }
+    }
+}
+
+class Game {
+
+    async generateGameCode() {
+        let code = crypto.randomBytes(3).toString('hex').toUpperCase()
+        if (games[code]) {
+            return generateGameCode()
+        } else {
+            return code
+        }
+    }
+
+    colourWord(guess, target) {
+
+        let tWord = target
+        let cWord = guess
+    
+        for (let letter = 0; letter < guess.length; letter++) {
+            if (cWord[letter] == target[letter]) {
+                cWord = setCharAt(cWord, letter, "@")
+                tWord = setCharAt(tWord, letter, "@")
+            } else {
+                let index = tWord.indexOf(cWord[letter])
+                if (index != -1) {
+                    cWord = setCharAt(cWord, letter, "/")
+                    tWord = setCharAt(tWord, index, "/")
+                } else {
+                    cWord = setCharAt(cWord, letter, "-")
+                }
+            }
+        }
+        return cWord
+    }
+
+    constructor(player1) {
+
+        this.roundTime = 20000
+        this.gameTime = 120000
+
+        this.player1 = new Player(player1, this)
+        player1.player = this.player1
+        this.player2 = null
+        let code = this.generateGameCode().then(code => {
+            this.code = code
+            games[code] = this
+            this.player1.sendData({type:"gameCreated", code:code})
+        })
+    }
+
+    join(player2) {
+        this.player2 = new Player(player2, this, this.player1)
+        player2.player = this.player2
+        this.player1.opponent = this.player2
+        
+        this.player1.sendData({type:"gameJoined"})
+        this.player2.sendData({type:"gameJoined"})
+
+    }
+
+    startGame() {
+        this.roundTimeout = setTimeout(() => {
+            this.roundTimeOver()
+        }, this.roundTime)
+
+        console.log("Game Started")
+
+        this.player1.canGuess = true
+        this.player2.canGuess = true
+    }
+
+    roundTimeOver() {
+        this.nextRound()
+    }
+
+    gameTimeOver() {
+        console.log("Game Over")
+
+    }
+
+    submittedGuess() {
+
+        if (this.player1.guess && this.player2.guess) {
+            this.nextRound()
+        }
+
+    }
+
+    nextRound() {
+
+        clearTimeout(this.roundTimeout)
+        this.roundTimeout = setTimeout(() => {
+            this.roundTimeOver()
+        }, this.roundTime)
+
+        if (!this.player1.guess) {
+            this.player1.guess = "?????"
+        }
+
+        if (!this.player2.guess) {
+            this.player2.guess = "?????"
+        }
+    
+        this.player1.sendData({
+            type:"revealMyGuess", 
+            guess:this.player1.guess, 
+            colours:this.colourWord(this.player1.guess, this.player2.target)
+        })
+
+        this.player1.sendData({
+            type:"revealOpponentGuess", 
+            guess:this.player2.guess, 
+            colours:this.colourWord(this.player2.guess, this.player2.target)
+        })
+
+
+        this.player2.sendData({
+            type:"revealMyGuess", 
+            guess:this.player2.guess, 
+            colours:this.colourWord(this.player2.guess, this.player1.target)
+        })
+
+        this.player2.sendData({
+            type:"revealOpponentGuess", 
+            guess:this.player1.guess, 
+            colours:this.colourWord(this.player1.guess, this.player1.target)
+        })
+
+        this.player1.canGuess = true
+        this.player2.canGuess = true
+        this.player1.guess = null
+        this.player2.guess = null
+
+        this.player1.sendData({type:"nextRound"})
+        this.player2.sendData({type:"nextRound"})
+
+    }
+
+}
+
