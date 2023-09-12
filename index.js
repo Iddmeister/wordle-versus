@@ -34,7 +34,6 @@ function setCharAt(str,index,chr) {
 
 var httpServer = app.listen(PORT, () => {
     console.log(`Server Listening On Port ${PORT}`)
-
 })
 
 var socketServer = new ws.Server({server:httpServer})
@@ -88,6 +87,7 @@ socketServer.on("connection", (client) => {
     })
 
 })
+
 
 class Player {
     constructor(client, game, opponent=null) {
@@ -159,17 +159,26 @@ class Game {
         this.player2.sendData(data)
     }
 
+    //This might work properly :)
     colourWord(guess, target) {
 
         let tWord = target
         let cWord = guess
     
         for (let letter = 0; letter < guess.length; letter++) {
-            if (cWord[letter] == target[letter]) {
+    
+            if (guess[letter] == target[letter]) {
                 cWord = setCharAt(cWord, letter, "@")
                 tWord = setCharAt(tWord, letter, "@")
-            } else {
-                let index = tWord.indexOf(cWord[letter])
+            }
+    
+        }
+    
+        for (let letter = 0; letter < guess.length; letter++) {
+    
+            if (!(cWord[letter] == "@")) {
+    
+                let index = tWord.indexOf(guess[letter])
                 if (index != -1) {
                     cWord = setCharAt(cWord, letter, "/")
                     tWord = setCharAt(tWord, index, "/")
@@ -177,7 +186,9 @@ class Game {
                     cWord = setCharAt(cWord, letter, "-")
                 }
             }
+    
         }
+    
         return cWord
     }
 
@@ -238,6 +249,7 @@ class Game {
     }
 
     destroyGame() {
+        clearInterval(this.roundTimeout)
         console.log(`Removing Game ${this.code}`)
         delete games[this.code]
     }

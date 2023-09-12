@@ -295,27 +295,6 @@ function setCharAt(str,index,chr) {
     return str.substring(0,index) + chr + str.substring(index+1);
 }
 
-function colourWord(guess, target) {
-
-    let tWord = target
-    let cWord = guess
-
-    for (let letter = 0; letter < guess.length; letter++) {
-        if (cWord[letter] == target[letter]) {
-            cWord = setCharAt(cWord, letter, "@")
-            tWord = setCharAt(tWord, letter, "@")
-        } else {
-            let index = tWord.indexOf(cWord[letter])
-            if (index != -1) {
-                cWord = setCharAt(cWord, letter, "/")
-                tWord = setCharAt(tWord, index, "/")
-            } else {
-                cWord = setCharAt(cWord, letter, "-")
-            }
-        }
-    }
-    return cWord
-}
 
 function colourRow(row, colours) {
 
