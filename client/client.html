@@ -8,6 +8,7 @@
     <script src="jquery.js"></script>
     <script src="words.js"></script>
     <script src="client.js" defer></script>
+    <script src="confetti.js" defer></script>
     <title>Wordle Versus</title>
 </head>
 
@@ -35,15 +36,15 @@
 
     <div id="game">
 
-        <h1 id="word-prompt" style="font-size: 2em; color: white; width: 100%; text-align: center;">Enter Your Target Word</h1>
-        <h1 id="waiting" style="display: none; font-size: 2em; color: white; width: 100%; text-align: center;">Waiting for Opponent</h1>
-        <h1 id="end-game-message" style="display: none; font-size: 2em; color: white; width: 100%; text-align: center;"></h1>
+        <canvas id="confetti-canvas"></canvas>
+
+        <h1 id="message">Enter Your Target Word</h1>
         <canvas id="effects" style="position: absolute; width: 100%; height: 100%; pointer-events: none;"></canvas>
 
         <div id="guess-grid"></div>
 
         <div id="keyboard-container">
-        <div id="info-bar"><p id="target-word">CLOUD</p><div id="round-timer" class="timer"><div class="inner-timer">20</div></div></div>
+        <div id="info-bar"><p id="target-word"></p><div id="round-timer" class="timer"><div class="inner-timer">20</div></div></div>
         <div data-keyboard id="keyboard">
             <button class="key" data-key="Q">Q</button>
             <button class="key" data-key="W">W</button>

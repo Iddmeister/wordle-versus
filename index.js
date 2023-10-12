@@ -118,6 +118,8 @@ class Player {
                 
                 this.target = data.target
 
+                this.opponent.sendData({type:"opponentReady"})
+
                 this.game.checkCanStart()
 
                 break;
@@ -134,7 +136,7 @@ class Player {
 
                     this.guess = data.guess.toLowerCase()
                     this.sendData({type:"submittedGuess", guess:data.guess})
-                    this.opponent.sendData({type:"opponentSubmittedGuess"})
+                    this.opponent.sendData({type:"opponentReady"})
                     this.game.submittedGuess()
                 }
                 break;

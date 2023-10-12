@@ -1,7 +1,0 @@
-function confettiEffects() {
-    
-}
-
-function update() {
-
-}

@@ -9,6 +9,7 @@ var roundTimer
 var gameTimer
 var canType = true
 var gameStarted = false
+var opponentReady = false
 
 class Timer {
 
@@ -35,6 +36,7 @@ class Timer {
     start() {
         this.startTime = (new Date()).getTime()
         this.interval = setInterval(() => {this.update()}, 10)
+        this.object.show()
     }
 
     stop() {
@@ -126,8 +128,8 @@ socket.onmessage = (raw) => {
             break;
             
         case "gameStarted":
-            $("#waiting").hide()
-
+            opponentReady = false
+            $("#message").text("Enter your guess")
             gameStarted = true
             addRow()
 
@@ -145,13 +147,15 @@ socket.onmessage = (raw) => {
             roundTimer.stop()
 
             if (data.winner == "draw") {
-                $("#end-game-message").text("Draw!")
+                $("#message").text("Draw!")
             } else if (data.winner == "you") {
-                $("#end-game-message").text("You Won!")
+                $("#message").text("You Won!")
+                startConfetti()
             } else {
-                $("#end-game-message").text("You Lost :(")
+                $("#message").text("You Lost :(")
             }
-            $("#end-game-message").show()
+
+            roundTimer.object.hide()
 
             break;
 
@@ -178,6 +182,12 @@ socket.onmessage = (raw) => {
 
             break;
 
+        case "opponentReady":
+
+            opponentReady = true
+
+            break;
+
         case "revealOpponentGuess":
 
             if (data.guess == "?????") {
@@ -192,10 +202,12 @@ socket.onmessage = (raw) => {
             break;
 
         case "nextRound":
+            opponentReady = false
             roundTimer.reset()
             roundTimer.start()
             addRow()
             canType = true
+            $("#message").text("Enter your guess")
             break;
 
     }
@@ -267,8 +279,11 @@ function enterRow(row) {
         canType = false
 
         $(currentRow).remove()
-        $("#word-prompt").hide()
-        $("#waiting").show()
+
+        if (!opponentReady) {
+            $("#message").text("Waiting for opponent")
+        }
+
         currentRow = null
 
         console.log("Submitted Target Word")
@@ -282,6 +297,10 @@ function enterRow(row) {
     }
 
     socket.sendData({type:"submitGuess", guess:word.toLowerCase()})
+
+    if (!opponentReady) {
+        $("#message").text("Waiting for opponent")
+    }
 
     canType = false
 
@@ -386,6 +405,25 @@ function addLetter(letter) {
 
 }
 
+function handleMouseClick(e) {
+    e.target.blur()
+    if (e.target.matches("[data-key]")) {
+        addLetter(e.target.dataset.key.toUpperCase())
+        e.target.blur()
+        return
+    }
+  
+    if (e.target.matches("[data-enter]")) {
+        enterRow(currentRow)
+        return
+    }
+  
+    if (e.target.matches("[data-delete]")) {
+        removeLetter()
+        return
+    }
+  }
+
 function physicalKeyPressed(event) {
 
     if (event.key === "Enter") {
@@ -409,5 +447,7 @@ function physicalKeyPressed(event) {
 
 $(()=> {
     $(document).on("keydown", physicalKeyPressed)
+    $(document).on("click", handleMouseClick)
+
 })
 
