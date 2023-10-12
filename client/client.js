@@ -157,6 +157,11 @@ socket.onmessage = (raw) => {
 
             roundTimer.object.hide()
 
+            $("#keyboard").addClass("game-over")
+            $("#target-word").addClass("game-over")
+            $("#game-over-container").css("display", "flex")
+
+
             break;
 
         case "error":
@@ -441,6 +446,21 @@ function physicalKeyPressed(event) {
         addLetter(event.key.toUpperCase())
         return
       }
+}
+
+function requestRematch() {
+
+}
+
+function returnToMenu() {
+    switchView("#menu")
+    $("#game-over-container").css("display", "none")
+    $("#keyboard").removeClass("game-over")
+    $("#target-word").removeClass("game-over")
+    roundTimer.object.show()
+
+    //Need to clean up guesses
+
 }
 
 

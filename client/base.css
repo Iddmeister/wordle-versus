@@ -25,6 +25,38 @@
     text-align: center;
   }
 
+  #target-word.game-over {
+    filter: brightness(40%);
+  }
+
+  #game-over-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: 2em;
+    z-index:999;
+
+  }
+
+  .game-over-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    height: 2em;
+    color: white;
+    border-radius: 0.3em;
+    background-color: hsl(234, 70%, 44%); 
+    text-transform: uppercase;
+    font-weight: bold;
+    border: hsl(234, 70%, 44%) solid 1em;
+    user-select: none;
+  }
+
   #confetti-canvas {
     position: absolute;
     width: 100%;
