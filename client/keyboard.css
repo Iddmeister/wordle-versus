@@ -90,10 +90,6 @@
     width: 1.75em;
     height: 1.75em;
   }
-  
-  .key:hover {
-    --lightness-offset: 10%;
-  }
 
   .key:active {
     --lightness-offset: 20%;
@@ -114,6 +110,12 @@
     --saturation: 29%;
     --lightness: 43%;
   }
+
+  @media (hover: hover) {
+    .key:hover {
+      --lightness-offset: 10%;
+    }
+}
   
   
   @media only screen and (max-width: 800px) {

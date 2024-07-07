@@ -1,6 +1,8 @@
 *, *::after, *::before {
     box-sizing: border-box;
     font-family: Arial;
+    touch-action: manipulation;
+
   }
 
   html {
@@ -24,6 +26,7 @@
     width: 100%;
     text-align: center;
   }
+
 
   #target-word.game-over {
     filter: brightness(40%);
@@ -365,6 +368,10 @@
   }
 
 @media only screen and (max-width: 800px) {
+
+  #target-word {
+    font-size: 1.5em;
+  }
 
 }
 

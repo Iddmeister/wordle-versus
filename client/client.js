@@ -11,8 +11,6 @@ var canType = true
 var gameStarted = false
 var opponentReady = false
 
-var debug = true
-
 class Timer {
 
     constructor(dom, time, timeUp) {
@@ -487,11 +485,5 @@ function resetGame() {
 $(()=> {
     $(document).on("keydown", physicalKeyPressed)
     $(document).on("click", handleMouseClick)
-
-    if (debug) {
-        switchView("#game")
-    }
-
-
 })
 
