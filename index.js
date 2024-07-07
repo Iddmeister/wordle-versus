@@ -3,6 +3,7 @@ const path = require("path")
 const crypto = require("crypto")
 const ws = require("ws")
 const fs = require("fs")
+const https = require("https")
 const words = require("./words")
 
 const dotenv = require('dotenv')
