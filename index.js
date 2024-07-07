@@ -10,7 +10,7 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 const WORD_LENGTH = 5
-const PORT = 8080
+const PORT = 443
 const DEBUG = process.argv.length > 2 && process.argv[2] == "debug"
 
 if (!DEBUG) console.debug = ()=>{}
@@ -18,10 +18,12 @@ if (!DEBUG) console.debug = ()=>{}
 var games = {}
 
 var app = express()
+
 app.use("/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
 app.use("/join/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
 
 app.get("/*", (req, res) => {
+    console.log("???")
     res.sendFile(path.join(__dirname, "client/index.html"))
 })
 
