@@ -47,42 +47,51 @@ socketServer.on("connection", (client) => {
     })
 
     client.on("message", (raw) => {
-        let data = JSON.parse(raw)
 
-        if (!data.type) data.type = ""
+        try {
 
-        switch(data.type) {
+            let data = JSON.parse(raw)
 
-            case "createGame":
-        
-                console.log("Creatng Game")
-                let game = new Game(client)
+            if (!data.type) data.type = ""
 
-                break;
+            switch(data.type) {
 
-            case "joinGame":
-                if (("code" in data) && games[data.code]) {
-                    let game = games[data.code]
-                    if (game.opponent) {
-                        client.sendData({type:"error", error:"Game Already Started"})
-                        return
+                case "createGame":
+            
+                    console.log("Creatng Game")
+                    let game = new Game(client)
+
+                    break;
+
+                case "joinGame":
+                    if (("code" in data) && games[data.code]) {
+                        let game = games[data.code]
+                        if (game.opponent) {
+                            client.sendData({type:"error", error:"Game Already Started"})
+                            return
+                        }
+                        game.join(client)
+                    } else {
+                        client.sendData({type:"error", error:"Game Does Not Exist"})
                     }
-                    game.join(client)
-                } else {
-                    client.sendData({type:"error", error:"Game Does Not Exist"})
-                }
 
-                break;
+                    break;
 
-            default:
+                default:
 
-                if (client.player) {
-                    client.player.request(data)
-                }
+                    if (client.player) {
+                        client.player.request(data)
+                    }
 
-                break;
+                    break;
 
-        }
+            }
+
+    } catch {
+
+        console.log("Invalid Data")
+
+    }
 
     })
 

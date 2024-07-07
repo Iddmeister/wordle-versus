@@ -122,6 +122,8 @@ socket.onmessage = (raw) => {
 
         case "gameJoined":
 
+            $("#message").text("Enter Your Target Word")
+            $("#target-word").text("")
             switchView("#game")
             addRow()
 
@@ -454,13 +456,28 @@ function requestRematch() {
 
 function returnToMenu() {
     switchView("#menu")
+    resetGame()
     $("#game-over-container").css("display", "none")
     $("#keyboard").removeClass("game-over")
     $("#target-word").removeClass("game-over")
+    roundTimer.reset()
     roundTimer.object.show()
 
     //Need to clean up guesses
 
+}
+
+function resetGame() {
+ 
+    stopConfetti()
+    removeConfetti()
+    gameStarted = false
+    opponentReady = false
+    canType = true
+    for (let row of $("#guess-grid").children()) {
+        row.remove()
+    }
+    
 }
 
 
