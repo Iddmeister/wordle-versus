@@ -2,6 +2,7 @@ const express = require("express")
 const path = require("path")
 const crypto = require("crypto")
 const ws = require("ws")
+const fs = require("fs")
 const words = require("./words")
 
 const dotenv = require('dotenv')
