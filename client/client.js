@@ -80,7 +80,7 @@ function switchView(newView) {
     $(newView).show()
 }
 
-var socket = new WebSocket("ws://"+location.host)
+var socket = new WebSocket("ws://"+"misc.gamesbutnogames.com:5072")
 
 socket.sendData = (data) => {
     socket.send(JSON.stringify(data))
