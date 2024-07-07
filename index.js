@@ -19,26 +19,6 @@ var games = {}
 
 var app = express()
 
-app.use("/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
-app.use("/join/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
-
-app.get("/*", (req, res) => {
-    console.log("???")
-    res.sendFile(path.join(__dirname, "client/index.html"))
-})
-
-app.get("/join/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client/index.html"))
-})
-
-
-
-function setCharAt(str,index,chr) {
-    if(index > str.length-1) return str;
-    return str.substring(0,index) + chr + str.substring(index+1);
-}
-
-
 var privateKey = fs.readFileSync(process.env.PRIVATE_KEY)
 var certificate = fs.readFileSync(process.env.CERTIFICATE)
 
@@ -52,6 +32,25 @@ var app = express()
 var httpsServer = https.createServer(options, app).listen(PORT, () => {
     console.log(`Server Listening On Port ${PORT}`)
 })
+
+
+app.use("/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
+app.use("/join/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
+
+app.get("/*", (req, res) => {
+    console.log("???")
+    res.sendFile(path.join(__dirname, "client/index.html"))
+})
+
+app.get("/join/*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client/index.html"))
+})
+
+
+function setCharAt(str,index,chr) {
+    if(index > str.length-1) return str;
+    return str.substring(0,index) + chr + str.substring(index+1);
+}
 
 
 var socketServer = new ws.Server({server:httpsServer})
