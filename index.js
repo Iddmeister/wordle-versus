@@ -4,6 +4,9 @@ const crypto = require("crypto")
 const ws = require("ws")
 const words = require("./words")
 
+const dotenv = require('dotenv')
+dotenv.config()
+
 const WORD_LENGTH = 5
 const PORT = 8080
 const DEBUG = process.argv.length > 2 && process.argv[2] == "debug"
@@ -32,11 +35,22 @@ function setCharAt(str,index,chr) {
 }
 
 
-var httpServer = app.listen(PORT, () => {
+var privateKey = fs.readFileSync(process.env.PRIVATE_KEY)
+var certificate = fs.readFileSync(process.env.CERTIFICATE)
+
+var options = {
+    key:privateKey,
+    cert:certificate,
+}
+
+var app = express()
+
+var httpsServer = https.createServer(options, app).listen(PORT, () => {
     console.log(`Server Listening On Port ${PORT}`)
 })
 
-var socketServer = new ws.Server({server:httpServer})
+
+var socketServer = new ws.Server({server:httpsServer})
 
 socketServer.on("connection", (client) => {
     console.log("Client Connected")
