@@ -38,7 +38,6 @@ app.use("/", express.static(path.join(__dirname, "client"), {extensions:["html"]
 app.use("/join/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
 
 app.get("/*", (req, res) => {
-    console.log("???")
     res.sendFile(path.join(__dirname, "client/index.html"))
 })
 
@@ -222,7 +221,7 @@ class Game {
 
     constructor(player1) {
 
-        this.roundTime = 20000
+        this.roundTime = 60000
         this.gameTime = 120000
 
         this.player1 = new Player(player1, this)

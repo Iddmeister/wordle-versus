@@ -11,6 +11,14 @@ var canType = true
 var gameStarted = false
 var opponentReady = false
 
+
+// setInterval(() => {
+//     let children = $("#title-top").children()
+//     for (let t = 0; t < children.length; t++) {
+//         flipTile(children[t], t, children, ["correct", "wrong", "wrong-location"][Math.floor(Math.random()*3)])
+//     }
+// }, 3000)
+
 class Timer {
 
     constructor(dom, time, timeUp) {
@@ -71,7 +79,8 @@ function createDOM(text) {
 
 const views = ["#menu", "#lobby", "#loading", "#game"]
 
-switchView("#loading")
+// switchView("#loading")
+switchView("#menu")
 
 function switchView(newView) {
     for (let view of views) {
@@ -135,7 +144,7 @@ socket.onmessage = (raw) => {
             gameStarted = true
             addRow()
 
-            roundTimer = new Timer($("#round-timer"), 20000, () => {
+            roundTimer = new Timer($("#round-timer"), 60000, () => {
                 roundTimer.reset()
             })
             roundTimer.start()
@@ -486,4 +495,3 @@ $(()=> {
     $(document).on("keydown", physicalKeyPressed)
     $(document).on("click", handleMouseClick)
 })
-

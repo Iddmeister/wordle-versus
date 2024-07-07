@@ -25,12 +25,22 @@
     </div>
 
     <div id="menu">
-    <div id="title">Wordle Wangle</div>
+    <div id="title">
+        <div id="title-top">
+            <div class="tile" data-state="correct">W</div>
+            <div class="tile" data-state="wrong-location">O</div>
+            <div class="tile" data-state="correct">R</div>
+            <div class="tile" data-state="correct">D</div>
+            <div class="tile" data-state="correct">L</div>
+            <div class="tile" data-state="correct">E</div>
+        </div>
+        <div id="title-bottom">wangle</div>
+    </div>
 
     <div id="menu-buttons">
 
-        <button class="menu-button" onclick="createGame()">Create Game</button>
-        <button class="menu-button" onclick="joinGame()">Join Game</button>
+        <button class="menu-button" onclick="createGame()">Create</button>
+        <button class="menu-button" onclick="joinGame()">Join</button>
 
     </div>
     </div>
