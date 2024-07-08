@@ -133,4 +133,10 @@
       padding: 1.75em;
       height: 5em;
     }
+
+    #info-bar {
+      font-size: 2em;
+      margin-bottom: 5px;
+    }
+
   }
