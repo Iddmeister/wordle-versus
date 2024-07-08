@@ -143,7 +143,7 @@
     align-items: center;
     justify-content: space-evenly;
     font-size: 0.5em;
-    gap: 0.1em;
+    gap: 0.2em;
 
   }
 
@@ -481,6 +481,10 @@
 
   #title-bottom {
     font-size: 1.6em;
+  }
+
+  #title-top {
+    gap: 0.5em;
   }
 
   .menu-button {
