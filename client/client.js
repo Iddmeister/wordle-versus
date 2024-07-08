@@ -291,6 +291,11 @@ function joinGame(code) {
 }
 
 function opponentLeft(target) {
+
+    if (currentView !== "#game") {
+        return
+    }
+
     if (roundTimer) {
         roundTimer.stop()
         roundTimer.object.hide()
