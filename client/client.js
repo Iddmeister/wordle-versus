@@ -291,7 +291,6 @@ function joinGame(code) {
 }
 
 function opponentLeft(target) {
-    console.log(target)
     if (roundTimer) {
         roundTimer.stop()
         roundTimer.object.hide()
@@ -325,7 +324,7 @@ function opponentLeft(target) {
 
 function leaveGame() {
     socket.sendData({type:"leaveGame"})
-    switchView("#menu")
+    returnToMenu()
 }
 
 var currentRow = null
