@@ -4,13 +4,14 @@ const crypto = require("crypto")
 const ws = require("ws")
 const fs = require("fs")
 const https = require("https")
+const http = require("http")
 const words = require("./words")
 
 const dotenv = require('dotenv')
 dotenv.config()
 
 const WORD_LENGTH = 5
-const PORT = 443
+const PORT = 8080
 const DEBUG = process.argv.length > 2 && process.argv[2] == "debug"
 
 if (!DEBUG) console.debug = ()=>{}
@@ -19,19 +20,28 @@ var games = {}
 
 var app = express()
 
-var privateKey = fs.readFileSync(process.env.PRIVATE_KEY)
-var certificate = fs.readFileSync(process.env.CERTIFICATE)
+var app = express()
+var httpsServer = null
 
-var options = {
-    key:privateKey,
-    cert:certificate,
+if (DEBUG) {
+    httpsServer = http.createServer(app).listen(PORT, () => {
+        console.log(`Server Listening On Port ${PORT}`)
+    })
+} else {
+
+    var privateKey = fs.readFileSync(process.env.PRIVATE_KEY)
+    var certificate = fs.readFileSync(process.env.CERTIFICATE)
+    
+    var options = {
+        key:privateKey,
+        cert:certificate,
+    }
+
+    httpsServer = https.createServer(options, app).listen(PORT, () => {
+        console.log(`Server Listening On Port ${PORT}`)
+    })
 }
 
-var app = express()
-
-var httpsServer = https.createServer(options, app).listen(PORT, () => {
-    console.log(`Server Listening On Port ${PORT}`)
-})
 
 
 app.use("/", express.static(path.join(__dirname, "client"), {extensions:["html"]}))
@@ -60,6 +70,14 @@ socketServer.on("connection", (client) => {
     
     client.on("close", (code) => {
         console.log("Disconnect", code)
+        try {
+            let player = client.player
+            if (player && player.game) {
+                player.game.playerLeft(player)
+            }
+        } catch {
+            console.log("Something went wrong on player leaving")
+        }
     })
 
     client.on("message", (raw) => {
@@ -80,8 +98,8 @@ socketServer.on("connection", (client) => {
                     break;
 
                 case "joinGame":
-                    if (("code" in data) && games[data.code]) {
-                        let game = games[data.code]
+                    if (("code" in data) && games[data.code.toUpperCase()]) {
+                        let game = games[data.code.toUpperCase()]
                         if (game.opponent) {
                             client.sendData({type:"error", error:"Game Already Started"})
                             return
@@ -103,9 +121,9 @@ socketServer.on("connection", (client) => {
 
             }
 
-    } catch {
+    } catch(err) {
 
-        console.log("Invalid Data")
+        console.log(`Error Occured:\n${err}`)
 
     }
 
@@ -128,6 +146,13 @@ class Player {
         this.client.sendData(data)
     }
 
+    removeSelf() {
+        this.client.player = null
+        this.client = null
+        this.game = null
+        this.opponent = null
+    }
+
     request(data) {
         if (!this.game) return
 
@@ -147,7 +172,7 @@ class Player {
 
                 this.game.checkCanStart()
 
-                break;
+            break;
 
             case "submitGuess":
                 if (this.canGuess && !this.guess) {
@@ -164,7 +189,15 @@ class Player {
                     this.opponent.sendData({type:"opponentReady"})
                     this.game.submittedGuess()
                 }
-                break;
+            break;
+
+            case "leaveGame":
+
+                if (this.game) {
+                    this.game.playerLeft(this)
+                }
+
+            break;
 
         }
     }
@@ -173,7 +206,17 @@ class Player {
 class Game {
 
     async generateGameCode() {
-        let code = crypto.randomBytes(3).toString('hex').toUpperCase()
+        let hex = crypto.randomBytes(3).toString('hex').toUpperCase()
+        let code = ""
+        //This is awful but i dont fucking care
+        for (let char of hex) {
+            if (["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(char)) {
+                code += ["G", "H", "J", "K", "L", "M", "P", "Q", "R", "S"][parseInt(char)]
+            } else {
+                code += char
+            }
+        }
+
         if (games[code]) {
             return generateGameCode()
         } else {
@@ -182,8 +225,12 @@ class Game {
     }
 
     sendPlayersData(data) {
-        this.player1.sendData(data)
-        this.player2.sendData(data)
+        if (this.player1) {
+            this.player1.sendData(data)
+        }
+        if (this.player2) {
+            this.player2.sendData(data)
+        }
     }
 
     //This might work properly :)
@@ -235,14 +282,20 @@ class Game {
     }
 
     join(player2) {
-        this.player2 = new Player(player2, this, this.player1)
-        player2.player = this.player2
-        this.player1.opponent = this.player2
+        let player = new Player(player2, this, this.player1)
+        this.player2 = player
+        player2.player = player
+        this.player1.opponent = player
         
         this.sendPlayersData({type:"gameJoined"})
 
         this.checkCanStart()
 
+    }
+
+    playerLeft(player) {
+        this.sendPlayersData({type:"opponentLeft", target:player.target})
+        this.destroyGame()
     }
 
     checkCanStart() {
@@ -276,8 +329,19 @@ class Game {
     }
 
     destroyGame() {
-        clearInterval(this.roundTimeout)
+
+        if (this.roundTimeout) {
+            clearInterval(this.roundTimeout)
+        }
         console.log(`Removing Game ${this.code}`)
+
+        if (this.player1) {
+            this.player1.removeSelf()
+        }
+        if (this.player2) {
+            this.player2.removeSelf()
+        }
+
         delete games[this.code]
     }
 

@@ -11,6 +11,7 @@ var canType = true
 var gameStarted = false
 var opponentReady = false
 
+var debug = false
 
 // setInterval(() => {
 //     let children = $("#title-top").children()
@@ -77,7 +78,8 @@ function createDOM(text) {
     return t.content.firstChild
 }
 
-const views = ["#menu", "#lobby", "#loading", "#game"]
+const views = ["#menu", "#lobby", "#loading", "#game", "#join"]
+var currentView = null
 
 switchView("#menu")
 // switchView("#loading")
@@ -87,9 +89,16 @@ function switchView(newView) {
         if (view != newView) $(view).hide()
     }
     $(newView).show()
+    currentView = newView
 }
 
-var socket = new WebSocket("wss://"+location.host)
+var socket = null
+
+if (debug) {
+    socket = new WebSocket("ws://"+location.host)
+} else {
+    socket = new WebSocket("wss://"+location.host)
+}
 
 socket.sendData = (data) => {
     socket.send(JSON.stringify(data))
@@ -109,11 +118,7 @@ socket.onopen = (event) => {
     if (location.pathname.startsWith("/join/")) {
         let code = location.pathname.replace("/join/", "")
         code = code.replace("/", "")
-        if (!(code.length <= 0)) {
-            socket.sendData({type:"joinGame", code:code})
-            switchView("#loading")
-            return
-        }
+        joinGame(code)
     }
 
     switchView("#menu")
@@ -138,6 +143,10 @@ socket.onmessage = (raw) => {
             addRow()
 
             break;
+
+        case "opponentLeft":
+            opponentLeft(data.target)
+        break;
             
         case "gameStarted":
             opponentReady = false
@@ -237,10 +246,87 @@ function createGame() {
 
 }
 
-function joinGame() {
+function joinView() {
+    clearJoinBoxCode()
+    switchView("#join")
+}
+
+// if (location.pathname.startsWith("/join/")) {
+//     let code = location.pathname.replace("/join/", "")
+//     code = code.replace("/", "")
+//     if (!(code.length <= 0)) {
+//         socket.sendData({type:"joinGame", code:code})
+//         switchView("#loading")
+//         return
+//     }
+// }
+
+function getJoinBoxCode() {
+
+    let code = ""
+
+    for (let child of $("#join-box").children()) {
+        let tile = $(child)
+        code += tile.text()
+    }
+
+    return code
+}
+
+function clearJoinBoxCode() {
+
+    for (let child of $("#join-box").children()) {
+        $(child).text("")
+    }
 
 }
 
+function joinGame(code) {
+
+    if (code.length === 6) {
+        socket.sendData({type:"joinGame", code:code})
+        switchView("#loading")
+    }
+
+}
+
+function opponentLeft(target) {
+    console.log(target)
+    if (roundTimer) {
+        roundTimer.stop()
+        roundTimer.object.hide()
+    }
+
+    $("#message").text("Opponent Left")
+
+    $("#keyboard").addClass("game-over")
+    $("#target-word").addClass("game-over")
+    $("#game-over-container").css("display", "flex")
+
+}
+
+
+// roundTimer.stop()
+
+// if (data.winner == "draw") {
+//     $("#message").text("Draw!")
+// } else if (data.winner == "you") {
+//     $("#message").text("You Won!")
+//     startConfetti()
+// } else {
+//     $("#message").text("You Lost :(")
+// }
+
+// roundTimer.object.hide()
+
+// $("#keyboard").addClass("game-over")
+// $("#target-word").addClass("game-over")
+// $("#game-over-container").css("display", "flex")
+
+function leaveGame() {
+    socket.sendData({type:"leaveGame"})
+    switchView("#menu")
+}
 
 var currentRow = null
 
@@ -271,6 +357,7 @@ function getWordFromRow(row) {
 }
 
 function enterRow(row) {
+
     if (!row) return
 
     if (!canType) return
@@ -380,6 +467,27 @@ function flipTile(tile, index, array, state) {
 }
 
 function removeLetter() {
+
+    if (currentView === "#join") {
+
+        let tile = undefined
+        
+        for (child of $("#join-box").children()) {
+            if (!($(child).text() === " " || $(child).text() === "")) {
+                tile = child
+            }
+        }
+    
+        if (tile) {
+            $(tile).text(" ")
+        } else {
+            //Display error - no letters to delete
+        }
+
+        return
+
+    }
+
     if (!currentRow) return
 
     if (!canType) return
@@ -400,6 +508,29 @@ function removeLetter() {
 }
 
 function addLetter(letter) {
+
+    if (currentView === "#join") {
+
+        let tile = undefined
+
+        for (let child of $("#join-box").children()) {
+            if ($(child).text() === " " || $(child).text() === "") {
+                tile = child
+                break
+            }
+        }
+
+        if (tile) {
+            $(tile).text(letter)
+        } else {
+            //Display Error
+            console.log("Out of space")
+        }
+
+        return
+
+    }
+
     if (!currentRow) return
 
     if (!canType) return
@@ -431,6 +562,12 @@ function handleMouseClick(e) {
     }
   
     if (e.target.matches("[data-enter]")) {
+
+        if (currentView === "#join") {
+            joinGame(getJoinBoxCode())
+            return
+        }
+
         enterRow(currentRow)
         return
     }
@@ -444,6 +581,12 @@ function handleMouseClick(e) {
 function physicalKeyPressed(event) {
 
     if (event.key === "Enter") {
+
+        if (currentView === "#join") {
+            joinGame(getJoinBoxCode())
+            return
+        }
+
         enterRow(currentRow)
         return
       }
@@ -470,9 +613,10 @@ function returnToMenu() {
     $("#game-over-container").css("display", "none")
     $("#keyboard").removeClass("game-over")
     $("#target-word").removeClass("game-over")
-    roundTimer.reset()
-    roundTimer.object.show()
-
+    if (roundTimer) {
+        roundTimer.reset()
+        roundTimer.object.show()
+    }
     //Need to clean up guesses
 
 }
@@ -500,5 +644,4 @@ function goToMenu() {
 $(()=> {
     $(document).on("keydown", physicalKeyPressed)
     $(document).on("click", handleMouseClick)
-
 })

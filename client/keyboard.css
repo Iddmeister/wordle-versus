@@ -39,7 +39,7 @@
     align-items: flex-end;
   }
 
-  #keyboard-container {
+  .keyboard-container {
     position: relative;
     display: flex;
     align-self: center;
@@ -48,7 +48,7 @@
 
   }
 
-  #keyboard {
+  .keyboard {
     display: grid;
     grid-template-columns: repeat(20, minmax(auto, 1.25em));
     grid-auto-rows: 3em;
@@ -57,7 +57,7 @@
     width: 100%;
   }
 
-  #keyboard.game-over {
+  .keyboard.game-over {
       filter: brightness(40%);
   }
   
@@ -120,11 +120,11 @@
   
   @media only screen and (max-width: 800px) {
 
-    #keyboard-container {
+    .keyboard-container {
       margin-bottom: 1em;
     }
 
-    #keyboard {
+    .keyboard {
       row-gap: 2.25em;
       column-gap: 0.25em;
     }
