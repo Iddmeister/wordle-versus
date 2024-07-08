@@ -168,13 +168,17 @@ socket.onmessage = (raw) => {
             roundTimer.stop()
 
             if (data.winner == "draw") {
-                $("#message").text("Draw!")
+                $("#message").text("Draw")
             } else if (data.winner == "you") {
-                $("#message").text("You Won!")
+                $("#message").text("You Won")
+                $("#game-over-info").hide()
                 startConfetti()
             } else {
-                $("#message").text("You Lost :(")
+                $("#message").text("You Lost")
             }
+
+            $("#opponent-box").show()
+            $("#opponent-word").text(data.target.toUpperCase())
 
             roundTimer.object.hide()
 
@@ -629,6 +633,7 @@ function resetGame() {
  
     stopConfetti()
     removeConfetti()
+    $("#opponent-box").hide()
     gameStarted = false
     opponentReady = false
     canType = true
@@ -644,6 +649,7 @@ function goToMenu() {
 
 }
 
+$("#opponent-box").hide()
 
 $(()=> {
     $(document).on("keydown", physicalKeyPressed)

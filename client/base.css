@@ -29,9 +29,35 @@
     text-align: center;
   }
 
+    
 
-  #target-word.game-over {
-    filter: brightness(40%);
+  #target-word {
+    color: white;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 0em;
+  }
+
+  #opponent-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #opponent-word {
+    color: white;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 0em;
+    margin-top: 2px;
+  }
+
+  #opponent-tag {
+    color: rgb(255, 63, 63);
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-bottom: 0em;
   }
 
   #game-over-container {
@@ -54,12 +80,21 @@
     font-size: 2em;
     height: 2em;
     color: white;
-    border-radius: 0.3em;
     background-color: hsl(234, 70%, 44%); 
     text-transform: uppercase;
     font-weight: bold;
     border: hsl(234, 70%, 44%) solid 1em;
     user-select: none;
+  }
+
+  #game-over-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    color: white;
+    background-color: hsl(240, 3%, 7%);
+    padding: 0.3em;
   }
 
   #confetti-canvas {
@@ -209,7 +244,7 @@
   #game-code {
     font-size: 1.5em;
     background-color: rgb(61, 61, 61);
-    padding: 0.5em;
+    padding: 0.3em;
 
   }
 
@@ -433,6 +468,10 @@
   }
 
 @media only screen and (max-width: 800px) {
+
+  .home-button {
+    font-size: 3em;
+  }
 
   #title {
     font-size: 2em;

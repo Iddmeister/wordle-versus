@@ -414,13 +414,14 @@ class Game {
 
     endGame(winner) {
         if (!winner) {
-            this.sendPlayersData({type:"gameEnded", winner:"draw"})
+            this.player1.sendData({type:"gameEnded", winner:"draw", target:this.player2.target})
+            this.player2.sendData({type:"gameEnded", winner:"draw", target:this.player1.target})
         } else if (winner == this.player1) {
-            this.player1.sendData({type:"gameEnded", winner:"you"})
-            this.player2.sendData({type:"gameEnded", winner:"opponent"})
+            this.player1.sendData({type:"gameEnded", winner:"you", target:this.player2.target})
+            this.player2.sendData({type:"gameEnded", winner:"opponent", target:this.player1.target})
         } else {
-            this.player2.sendData({type:"gameEnded", winner:"you"})
-            this.player1.sendData({type:"gameEnded", winner:"opponent"})
+            this.player2.sendData({type:"gameEnded", winner:"you", target:this.player1.target})
+            this.player1.sendData({type:"gameEnded", winner:"opponent", target:this.player2.target})
         }
         this.destroyGame()
     }
