@@ -46,8 +46,15 @@
     </div>
     
     <div id="lobby">
-        <h1 style="font-size: 2em; color: white;">Waiting for Opponent...</h1>
+        <div class="bi bi-box-arrow-left home-button" onclick="goToMenu()"></div>
+        <h1 style="font-size: 2em; color: white;text-align: center;">Waiting for Opponent</h1>
+        <div style="display: flex; flex-direction: row; gap: 0.5em; align-items: center; justify-content: center;">
+            <p style="font-size: 1em;">Join With This Code:</p>
+            <p id="game-code" style="font-size: 2em;">Code</p>
+        </div>
+        <p>or use this link</p>
         <button id="game-link" onclick="navigator.clipboard.writeText(this.innerHTML)">Game Code</button>
+        <p>click to copy to clipboard</p>
     </div>
 
     <div id="game">
@@ -67,7 +74,7 @@
         </div>
 
         
-        <div id="info-bar"><p id="target-word"></p><div id="round-timer" class="timer"><div class="inner-timer">20</div></div></div>
+        <div id="info-bar"><p id="target-word"></p><div id="round-timer" class="timer"><div class="inner-timer">60</div></div></div>
         <div data-keyboard id="keyboard">
             <button class="key" data-key="Q">Q</button>
             <button class="key" data-key="W">W</button>

@@ -1,3 +1,5 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css");
+
 *, *::after, *::before {
     box-sizing: border-box;
     font-family: Arial;
@@ -136,11 +138,23 @@
 
   } 
   .menu-button:hover {
-    filter: brightness(120%);
+    filter: brightness(80%);
   }
 
   .menu-button:active {
     filter: brightness(140%);
+  }
+
+  .home-button {
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    color: white;
+    font-size: 2.5em;
+  }
+
+  .home-button:hover {
+    filter: brightness(80%);
   }
 
   #lobby {
@@ -149,7 +163,9 @@
     justify-content: center;
     flex-direction: column;
     height:100%;
-    gap: 4%;
+    color: white;
+    font-size: 1em;
+    gap: 0.25em;
   }
 
   #loading {
@@ -163,10 +179,14 @@
   #game-link {
     font-size: 2em;
     color: white;
-    border: .05em solid hsl(240, 2%, 23%);
-    border-radius: 0.3em;
+    border-width: 0px;
+    padding: 0.5em;
     background-color: hsl(234, 70%, 44%);
     font-weight: bold;
+  }
+
+  #game-link:hover {
+    filter: brightness(80%);
   }
 
   #guess-grid {
@@ -404,6 +424,10 @@
 
   .tile {
     font-size: 3em;
+  }
+
+  #lobby {
+    font-size: 2em;
   }
 
 }

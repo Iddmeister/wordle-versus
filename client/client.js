@@ -79,8 +79,8 @@ function createDOM(text) {
 
 const views = ["#menu", "#lobby", "#loading", "#game"]
 
-// switchView("#loading")
 switchView("#menu")
+// switchView("#loading")
 
 function switchView(newView) {
     for (let view of views) {
@@ -126,6 +126,7 @@ socket.onmessage = (raw) => {
     switch(data.type) {
         case "gameCreated":
             switchView("#lobby")
+            $("#game-code").text(data.code)
             $("#game-link").text(location.origin+"/join/"+data.code)
             break;
 
@@ -489,9 +490,15 @@ function resetGame() {
     
 }
 
+function goToMenu() {
+
+    switchView("#menu")
+
+}
 
 
 $(()=> {
     $(document).on("keydown", physicalKeyPressed)
     $(document).on("click", handleMouseClick)
+
 })
