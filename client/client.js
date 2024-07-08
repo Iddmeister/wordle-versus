@@ -82,6 +82,7 @@ const views = ["#menu", "#lobby", "#loading", "#game", "#join"]
 var currentView = null
 
 switchView("#menu")
+// switchView("#game")
 // switchView("#loading")
 
 function switchView(newView) {
@@ -122,7 +123,7 @@ socket.onopen = (event) => {
     }
 
     switchView("#menu")
-    //switchView("#game")
+    // switchView("#game")
 
 }
 
@@ -649,7 +650,17 @@ function goToMenu() {
 
 }
 
+function closeHelp() {
+    $("#help").hide()
+}
+
+function openHelp() {
+    $("#help").show()
+}
+
 $("#opponent-box").hide()
+$("#help").hide()
+
 
 $(()=> {
     $(document).on("keydown", physicalKeyPressed)

@@ -22,6 +22,55 @@
     align-content: center;
   }
 
+
+  #help {
+    z-index: 100;
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+    margin: 0;
+    background-color: hsla(0, 0%, 0%, 0.411);
+    width: 100%;
+    height: 100%;
+    color: white;
+    font-size: 1em;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #help-box {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    height: 80%;
+    background-color: hsl(240, 3%, 7%);
+    border: 2px solid white;
+    /* border-color: white; */
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+    overflow-y: scroll;
+    text-align: center;
+    padding: 0.25em;
+
+  }
+
+  #exit-help {
+    position: absolute;
+    font-size: 3em;
+    right: 10px;
+    top: 5px;
+  }
+
+  #examples {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25em;
+  }
+
+
   #message {
     font-size: 2em; 
     color: white;
@@ -188,6 +237,26 @@
     top: 10px;
     color: white;
     font-size: 2.5em;
+  }
+
+  .info-button {
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    color: white;
+    font-size: 2.5em;
+  }
+
+  .help-button {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    color: white;
+    font-size: 2.5em;
+  }
+
+  .help-button:hover {
+    filter: brightness(80%);
   }
 
   .home-button:hover {
@@ -471,7 +540,17 @@
 
 @media only screen and (max-width: 800px) {
 
-  .home-button {
+  #help p {
+    font-size: 2em;
+  }
+
+  #exit-help {
+    font-size: 4em;
+    right: 0px;
+    top: 0px;
+  }
+
+  .top-button {
     font-size: 3em;
   }
 

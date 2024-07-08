@@ -4,10 +4,30 @@
 
 <head>
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTXG871G7C"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-RTXG871G7C');
+    </script>
 
     <meta charset="UTF-8">    
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
 
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <link rel="canonical" href="https://wordlewangle.com/" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Play competitive wordle 1v1 online for free">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Wordle Wangle">
+    <meta property="og:url" content="https://wordlewangle.com/"/>
+    <meta property="og:description" content="Play competitive wordle 1v1 online for free">
+    <meta property="og:image" content="https://wordlewangle.com/favicon.png"/>
+    <meta name="googlebot-news" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 
     <link rel="stylesheet" href="keyboard.css">
     <link rel="stylesheet" href="base.css">
@@ -16,15 +36,84 @@
     <script src="client.js" defer></script>
     <script src="confetti.js" defer></script>
     <title>Wordle Wangle</title>
+
 </head>
 
 <body>
+
+    <div id="help">
+        <div id="help-box">
+            <div id="exit-help" class="bi bi-x" onclick="closeHelp()"></div>
+            <h1>How To Play</h1>
+            <p>Wordle Wangle is a competitive version of normal wordle</p>
+            <p>Before the game begins, each player picks a target word. You are trying to guess your opponents target word to win</p>
+            <p>Every round players enter a guess for their opponent's word. Both your own guess <i>and</i> your opponents guess will appear on your screen</p>
+
+            <p></p>
+            
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25em;">
+            
+            <div class="example-word">
+                <div class="tile" data-state="correct">G</div>
+                <div class="tile" data-state="wrong">U</div>
+                <div class="tile" data-state="wrong-location">E</div>
+                <div class="tile" data-state="wrong">S</div>
+                <div class="tile" data-state="wrong">S</div>
+            </div>
+
+            <div class="example-word">
+                <div class="tile opponent" data-state="wrong-location">E</div>
+                <div class="tile opponent" data-state="wrong">N</div>
+                <div class="tile opponent" data-state="wrong">E</div>
+                <div class="tile opponent" data-state="wrong">M</div>
+                <div class="tile opponent" data-state="wrong">Y</div>
+            </div>
+
+            </div>
+            <p>Your opponent's guesses are marked with a red line</p>
+            <p>Be careful not to reveal information about your own target word in your guess</p>
+            <p>The letters in the words will be coloured based on if/how they appear in your opponents word</p>
+
+            <div id="examples">
+                <div class="example-word">
+                    <div class="tile" data-state="correct">F</div>
+                    <div class="tile">I</div>
+                    <div class="tile">S</div>
+                    <div class="tile">H</div>
+                    <div class="tile">Y</div>
+                </div>
+                <p><b>F</b> is in the word and in the correct place</p>
+                <div class="example-word">
+                    <div class="tile">H</div>
+                    <div class="tile" data-state="wrong-location">A</div>
+                    <div class="tile">T</div>
+                    <div class="tile">E</div>
+                    <div class="tile">S</div>
+                </div>
+                <p><b>A</b> is in the word but in the wrong place</p>
+                <div class="example-word">
+                    <div class="tile">S</div>
+                    <div class="tile">H</div>
+                    <div class="tile">A</div>
+                    <div class="tile" data-state="wrong">R</div>
+                    <div class="tile">K</div>
+                </div>
+                <p><b>R</b> is not in the word</p>
+
+            </div>
+
+        </div>
+    </div>
 
     <div id="loading">
         <h1 style="font-size: 2em; color: white;">Loading...</h1>
     </div>
 
     <div id="menu">
+
+    <a class="bi bi-info-circle info-button top-button" href="privacypolicy.html"></a>
+    <div class="bi bi-question-circle help-button top-button" onclick="openHelp()"></div>
+
     <div id="title">
         <div id="title-top">
             <div class="tile" data-state="correct">W</div>
@@ -43,6 +132,7 @@
         <button class="menu-button" onclick="joinView()">Join</button>
 
     </div>
+    
     </div>
 
     <div id="join">
@@ -113,7 +203,9 @@
 
     <div id="game">
 
-        <div class="bi bi-box-arrow-left home-button" onclick="leaveGame()"></div>
+        <div class="bi bi-box-arrow-left home-button top-button" onclick="leaveGame()"></div>
+        <div class="bi bi-question-circle help-button top-button" onclick="openHelp()"></div>
+
 
         <canvas id="confetti-canvas"></canvas>
 

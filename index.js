@@ -55,6 +55,10 @@ app.get("/join/*", (req, res) => {
     res.sendFile(path.join(__dirname, "client/index.html"))
 })
 
+app.get("/privacy", (req, res) => {
+    res.sendFile(path.join(__dirname, "client/privacypolicy.html"))
+})
+
 
 function setCharAt(str,index,chr) {
     if(index > str.length-1) return str;
