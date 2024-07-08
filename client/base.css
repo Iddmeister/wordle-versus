@@ -177,12 +177,21 @@
   }
 
   #game-link {
-    font-size: 2em;
+    font-size: 1em;
     color: white;
     border-width: 0px;
     padding: 0.5em;
     background-color: hsl(234, 70%, 44%);
     font-weight: bold;
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  #game-code {
+    font-size: 1.5em;
+    background-color: rgb(61, 61, 61);
+    padding: 0.5em;
+
   }
 
   #game-link:hover {
