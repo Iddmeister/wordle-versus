@@ -11,8 +11,8 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 const WORD_LENGTH = 5
-const PORT = 8080
 const DEBUG = process.argv.length > 2 && process.argv[2] == "debug"
+const PORT = DEBUG ? 8080 : 443
 
 if (!DEBUG) console.debug = ()=>{}
 
