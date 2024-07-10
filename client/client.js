@@ -139,6 +139,7 @@ socket.onmessage = (raw) => {
         case "gameJoined":
 
             $("#message").text("Enter Your Target Word")
+            $("#target-word-message").show()
             $("#target-word").text("")
             switchView("#game")
             addRow()
@@ -151,6 +152,7 @@ socket.onmessage = (raw) => {
             
         case "gameStarted":
             opponentReady = false
+            $("#target-word-message").hide()
             $("#message").text("Enter your guess")
             gameStarted = true
             addRow()
@@ -237,6 +239,7 @@ socket.onmessage = (raw) => {
             break;
 
         case "nextRound":
+            $("#target-word-message").hide()
             opponentReady = false
             roundTimer.reset()
             roundTimer.start()
