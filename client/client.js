@@ -5,7 +5,7 @@ const SLIDE_ANIMATION_DURATION = 200
 const tileHTML = '<div class="tile"> </div>'
 const rowHTML = '<div class="row"></div>'
 
-var roundTimer
+var roundTimer = null
 var gameTimer
 var canType = true
 var gameStarted = false
@@ -193,6 +193,10 @@ socket.onmessage = (raw) => {
         case "error":
 
             console.log(data.error)
+            if (currentView === "#join" && data.error === "Game Does Not Exist") {
+                $("#join-message").text("Game not found")
+                return
+            }
             switchView("#menu")
 
             break;
@@ -252,6 +256,7 @@ function createGame() {
 }
 
 function joinView() {
+    $("#join-message").text("Enter Join Code")
     clearJoinBoxCode()
     switchView("#join")
 }
@@ -290,7 +295,6 @@ function joinGame(code) {
 
     if (code.length === 6) {
         socket.sendData({type:"joinGame", code:code})
-        switchView("#loading")
     }
 
 }
@@ -660,6 +664,7 @@ function openHelp() {
 
 $("#opponent-box").hide()
 $("#help").hide()
+$("#round-timer").hide()
 
 
 $(()=> {
