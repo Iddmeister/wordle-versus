@@ -313,6 +313,7 @@ function opponentLeft(target) {
         roundTimer.object.hide()
     }
 
+    $("#target-word-message").hide()
     $("#message").text("Opponent Left")
 
     $("#keyboard").addClass("game-over")
