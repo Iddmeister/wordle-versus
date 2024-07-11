@@ -11,7 +11,7 @@ var canType = true
 var gameStarted = false
 var opponentReady = false
 
-var debug = true
+var debug = false
 
 // setInterval(() => {
 //     let children = $("#title-top").children()
@@ -29,9 +29,27 @@ class Timer {
         this.interval = null
         this.timeUp = timeUp
         this.startTime = null
+
+        if (time < 0) {
+            this.infinite = true
+        } else {
+            this.infinite = false
+        }
+
+        if (time.toString().length > 2) {
+            $(this.object).children("div").addClass("large-time")
+        } else {
+            $(this.object).children("div").removeClass("large-time")
+        }
+
     }
 
     update() {
+
+        if (this.infinite) {
+            return
+        }
+
         let passedTime = (new Date()).getTime()-this.startTime
         this.time = Math.max(0, this.maxTime-passedTime)
         this.setTimer(this.time/this.maxTime)
@@ -43,18 +61,35 @@ class Timer {
     }
 
     start() {
+        
+        if (this.infinite) {
+            this.setTimer(1)
+            return
+        }
+
         this.startTime = (new Date()).getTime()
         this.interval = setInterval(() => {this.update()}, 10)
         this.object.show()
     }
 
     stop() {
+
+
+        if (this.infinite) {
+            return
+        }
+
         if (!this.interval) return
         clearInterval(this.interval)
         this.interval = null
     }
 
     reset() {
+
+        if (this.infinite) {
+            return
+        }
+
         this.stop()
         this.time = this.maxTime
         this.setTimer(this.time/this.maxTime)
@@ -65,7 +100,11 @@ class Timer {
 
         $(this.object).css("background-image", `conic-gradient(white ${amount*360}deg, hsl(240, 3%, 7%) 0deg`)
         // $(this.object).children("div").text(Math.ceil(this.time/1000))
-        $(this.object).children("div").text(Math.ceil((amount*this.maxTime)/1000))
+        if (this.infinite) {
+            $(this.object).children("div").text("∞")
+        } else {
+            $(this.object).children("div").text(Math.ceil(parseFloat(amount*this.maxTime)/1000.0))
+        }
 
     
     }
@@ -165,9 +204,11 @@ socket.onmessage = (raw) => {
             gameStarted = true
             addRow()
 
-            roundTimer = new Timer($("#round-timer"), 60000, () => {
+            roundTimer = new Timer($("#round-timer"), parseFloat(data.roundTime), () => {
                 roundTimer.reset()
             })
+
+            roundTimer.object.show()
             roundTimer.start()
 
             canType = true
@@ -319,6 +360,11 @@ function opponentLeft(target) {
     if (roundTimer) {
         roundTimer.stop()
         roundTimer.object.hide()
+    }
+
+    if (target) {
+        $("#opponent-box").show()
+        $("#opponent-word").text(target.toUpperCase())
     }
 
     $("#target-word-message").hide()
@@ -628,6 +674,51 @@ function physicalKeyPressed(event) {
       }
 }
 
+var maxRoundTime = 180
+var currentRoundTime = 60
+
+function increaseRoundTime(amount) {
+
+    if (currentRoundTime <= maxRoundTime) {
+
+        currentRoundTime += amount
+
+        if (currentRoundTime > maxRoundTime) {
+            $("#round-time-option").text("∞")
+            socket.sendData({type:"updateRoundTime", time:-1})
+        } else {
+            $("#round-time-option").text(currentRoundTime.toString())
+            socket.sendData({type:"updateRoundTime", time:currentRoundTime})
+        }
+
+    
+    }
+
+}
+
+function decreaseRoundTime(amount) {
+
+    if (currentRoundTime > 0) {
+
+        currentRoundTime -= amount
+
+        if (currentRoundTime <= 0) {
+            $("#round-time-option").text("∞")
+            socket.sendData({type:"updateRoundTime", time:-1})
+            
+        } else {
+            $("#round-time-option").text(currentRoundTime.toString())
+            socket.sendData({type:"updateRoundTime", time:currentRoundTime})
+        }
+
+
+    }
+
+
+
+}
+
+
 function requestRematch() {
 
 }
@@ -640,7 +731,7 @@ function returnToMenu() {
     $("#target-word").removeClass("game-over")
     if (roundTimer) {
         roundTimer.reset()
-        roundTimer.object.show()
+        // roundTimer.object.show()
     }
     //Need to clean up guesses
 
@@ -654,6 +745,11 @@ function resetGame() {
     gameStarted = false
     opponentReady = false
     canType = true
+
+    if (roundTimer) {
+        roundTimer.object.hide()
+    }
+
     for (let row of $("#guess-grid").children()) {
         row.remove()
     }

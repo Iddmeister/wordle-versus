@@ -24,6 +24,13 @@
     background-color: hsl(240, 3%, 7%);
   }
 
+  .large-time {
+    width: 1.6em;
+    height:1.6em;
+    line-height: 1.6em;
+    /* font-weight: lighter; */
+  }
+
   #info-bar {
     display: flex;
     flex-direction: row;

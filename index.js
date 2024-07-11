@@ -13,7 +13,7 @@ dotenv.config()
 const WORD_LENGTH = 5
 const DEBUG = process.argv.length > 2 && process.argv[2] == "debug"
 const PORT = DEBUG ? 8080 : 443
-const ADMIN_PASS = "hello123"//process.env.ADMIN_PASS
+const ADMIN_PASS = process.env.ADMIN_PASS
 
 if (!DEBUG) console.debug = ()=>{}
 
@@ -241,6 +241,14 @@ class Player {
 
         switch(data.type) {
 
+            case "updateRoundTime":
+
+                if (this.game && !this.game.player2) {
+                    this.game.updateRoundTime(data.time)
+                }
+
+            break;
+
             case "submitTarget":
 
                 //!!!!!!!!!!!!!!!
@@ -352,6 +360,7 @@ class Game {
     constructor(player1) {
 
         this.roundTime = 60000
+        this.clientRoundTime = 60000
         this.gameTime = 120000
 
         this.player1 = new Player(player1, this)
@@ -376,6 +385,10 @@ class Game {
 
     }
 
+    updateRoundTime(time) {
+        this.clientRoundTime = parseFloat(time)*1000
+    }
+
     playerLeft(player) {
         this.sendPlayersData({type:"opponentLeft", target:player.target})
         this.destroyGame()
@@ -388,6 +401,18 @@ class Game {
     }
 
     startGame() {
+
+        let clientTime = 0
+
+        if (this.clientRoundTime < 0) {
+            this.roundTime = 600000
+            clientTime = -1
+        } else {
+            this.roundTime = Math.max(Math.min(this.clientRoundTime, 180000), 5000)
+            clientTime = this.roundTime
+        }
+        
+
         this.roundTimeout = setTimeout(() => {
             this.roundTimeOver()
         }, this.roundTime)
@@ -397,7 +422,7 @@ class Game {
         this.player1.canGuess = true
         this.player2.canGuess = true
 
-        this.sendPlayersData({type:"gameStarted"})
+        this.sendPlayersData({type:"gameStarted", roundTime:clientTime})
 
     }
 

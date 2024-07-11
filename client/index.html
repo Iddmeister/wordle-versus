@@ -41,7 +41,7 @@
 
 <body>
 
-    <div id="maintenance">
+    <div id="maintenance" style="display: none;">
 
         <div class="bi bi-box-arrow-left home-button" onclick="goToMenu()"></div>
 
@@ -201,6 +201,19 @@
     <div id="lobby" style="display: none;">
         <div class="bi bi-box-arrow-left home-button" onclick="leaveGame()"></div>
         <h1 style="font-size: 2em; color: white;text-align: center;">Waiting for Opponent</h1>
+
+        <div id="lobby-options">
+            <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 1em;">
+            Round Time
+            <div class="number-picker">
+                <div class="number-change bi bi-dash" onclick="decreaseRoundTime(5)"></div>
+                <div class="number" id="round-time-option">60</div>
+                <div class="number-change bi bi-plus" onclick="increaseRoundTime(5)"></div>
+            </div>
+            </div>
+        </div>
+
+
         <div style="display: flex; flex-direction: row; gap: 0.5em; align-items: center; justify-content: center;">
             <p style="font-size: 1em;">Join With This Code:</p>
             <div id="game-code">Code</div>

@@ -4,6 +4,7 @@
     box-sizing: border-box;
     font-family: Arial;
     touch-action: manipulation;
+    user-select: none;
 
   }
 
@@ -299,6 +300,49 @@
     flex-direction: row;
     gap: 0.25em;
     padding-top: 1em;
+  }
+
+  #lobby-options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1em;
+  }
+
+  .number-picker {
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25em;
+
+  }
+
+  .number-change {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    color: black;
+    font-size: 1.5em;
+    width: 1.8em;
+    height: 1.8em;
+  }
+
+  .number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0);
+    border: .05em solid hsl(240, 2%, 23%);
+    color: white;
+    font-size: 1.5em;
+    width: 1.8em;
+    height: 1.8em;
+    user-select: none;
+
   }
 
   #lobby {
