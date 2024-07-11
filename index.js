@@ -361,7 +361,7 @@ class Game {
 
         this.roundTime = 60000
         this.clientRoundTime = 60000
-        this.gameTime = 120000
+        this.gameTime = 120000 //Not being used lmao
 
         this.player1 = new Player(player1, this)
         player1.player = this.player1
