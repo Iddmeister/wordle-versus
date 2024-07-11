@@ -13,6 +13,7 @@ dotenv.config()
 const WORD_LENGTH = 5
 const DEBUG = process.argv.length > 2 && process.argv[2] == "debug"
 const PORT = DEBUG ? 8080 : 443
+const ADMIN_PASS = "hello123"//process.env.ADMIN_PASS
 
 if (!DEBUG) console.debug = ()=>{}
 
@@ -22,6 +23,8 @@ var app = express()
 
 var app = express()
 var httpsServer = null
+
+var maintenance = false
 
 if (DEBUG) {
     httpsServer = http.createServer(app).listen(PORT, () => {
@@ -69,7 +72,9 @@ function setCharAt(str,index,chr) {
 var socketServer = new ws.Server({server:httpsServer})
 
 socketServer.on("connection", (client) => {
+
     console.log("Client Connected")
+
     client.sendData = (data) => {client.send(JSON.stringify(data))}
     
     client.on("close", (code) => {
@@ -95,9 +100,18 @@ socketServer.on("connection", (client) => {
             switch(data.type) {
 
                 case "createGame":
+
+                    if (maintenance) {
+
+                        console.log("Blocked Game - Maintenance")
+                        client.sendData({type:"maintenance"})
+                        
+                    } else {
             
-                    console.log("Creatng Game")
-                    let game = new Game(client)
+                        console.log("Creating Game")
+                        let game = new Game(client)
+
+                    }
 
                     break;
 
@@ -121,6 +135,10 @@ socketServer.on("connection", (client) => {
                         client.player.request(data)
                     }
 
+                    if (data.admin) {
+                        adminRequest(client, data)
+                    }
+
                     break;
 
             }
@@ -134,6 +152,67 @@ socketServer.on("connection", (client) => {
     })
 
 })
+
+function adminRequest(client, data) {
+
+    console.log("Admin Request")
+
+    if (!ADMIN_PASS) {
+        return
+    }
+
+    if (ADMIN_PASS === data.admin) {
+
+        console.log("Authenticated")
+
+        switch (data.type) {
+
+            case "num_users":
+
+                console.log("Requested num_users")
+                client.sendData({type:"info", info:socketServer.clients.size})
+
+            break;
+
+            case "num_games":
+
+                console.log("Requested num_games")
+                client.sendData({type:"info", info:Object.keys(games).length})
+
+            break;
+
+            case "activate_maintenance":
+
+                console.log("Activating Maintenance")
+                maintenance = true
+                client.sendData({type:"info", info:"Activated Maintenance"})
+
+                // socketServer.clients.forEach(other => {
+                //     other.sendData({type:"maintenance"})
+                // })
+
+
+            break;
+
+            case "deactivate_maintenance":
+
+                console.log("Deactivating Maintenance")
+                maintenance = false
+                client.sendData({type:"info", info:"Deactivated Maintenance"})
+
+                // socketServer.clients.forEach(other => {
+                //     other.sendData({type:"maintenance_over"})
+                // })
+
+            break;
+
+        }
+
+    } else {
+        client.sendData({error:"invalid pass"})
+    }
+
+}
 
 
 class Player {

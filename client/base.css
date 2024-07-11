@@ -22,6 +22,19 @@
     align-content: center;
   }
 
+  #maintenance {
+    display: flex;
+    background-color: hsla(0, 0%, 0%, 0.411);;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+    flex-direction: column;
+    color: white;
+    height: 100%;
+    text-align: center;
+    padding: 1em;
+  }
+
 
   #help {
     z-index: 100;

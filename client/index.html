@@ -41,7 +41,16 @@
 
 <body>
 
-    <div id="help">
+    <div id="maintenance">
+
+        <div class="bi bi-box-arrow-left home-button" onclick="goToMenu()"></div>
+
+        <h1>Sorry</h1>
+        <h2>This site us currently under maintenance and will be back shortly</h2>
+
+    </div>
+
+    <div id="help" style="display: none;">
         <div id="help-box">
             <div id="exit-help" class="bi bi-x" onclick="closeHelp()"></div>
             <h1>How To Play</h1>
@@ -105,11 +114,11 @@
         </div>
     </div>
 
-    <div id="loading">
+    <div id="loading" style="display: none;">
         <h1 style="font-size: 2em; color: white;">Loading...</h1>
     </div>
 
-    <div id="menu">
+    <div id="menu" style="display: none;">
 
     <a class="bi bi-info-circle info-button top-button" href="privacypolicy.html"></a>
     <div class="bi bi-question-circle help-button top-button" onclick="openHelp()"></div>
@@ -135,7 +144,7 @@
     
     </div>
 
-    <div id="join">
+    <div id="join" style="display: none;">
 
         <div style="display: flex; align-items: center; justify-content: center; flex-direction: column;">
             <h1 id="join-message">Enter Join Code</h1>
@@ -189,7 +198,7 @@
 
     </div>
     
-    <div id="lobby">
+    <div id="lobby" style="display: none;">
         <div class="bi bi-box-arrow-left home-button" onclick="leaveGame()"></div>
         <h1 style="font-size: 2em; color: white;text-align: center;">Waiting for Opponent</h1>
         <div style="display: flex; flex-direction: row; gap: 0.5em; align-items: center; justify-content: center;">
@@ -201,7 +210,7 @@
         <p>click to copy to clipboard</p>
     </div>
 
-    <div id="game">
+    <div id="game" style="display: none;">
 
         <div class="bi bi-box-arrow-left home-button top-button" onclick="leaveGame()"></div>
         <div class="bi bi-question-circle help-button top-button" onclick="openHelp()"></div>

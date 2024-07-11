@@ -11,7 +11,7 @@ var canType = true
 var gameStarted = false
 var opponentReady = false
 
-var debug = false
+var debug = true
 
 // setInterval(() => {
 //     let children = $("#title-top").children()
@@ -78,7 +78,7 @@ function createDOM(text) {
     return t.content.firstChild
 }
 
-const views = ["#menu", "#lobby", "#loading", "#game", "#join"]
+const views = ["#menu", "#lobby", "#loading", "#game", "#join", "#maintenance"]
 var currentView = null
 
 switchView("#menu")
@@ -130,6 +130,14 @@ socket.onopen = (event) => {
 socket.onmessage = (raw) => {
     let data = JSON.parse(raw.data)
     switch(data.type) {
+
+
+        case "maintenance":
+
+            switchView("#maintenance")
+
+        break;
+
         case "gameCreated":
             switchView("#lobby")
             $("#game-code").text(data.code)
